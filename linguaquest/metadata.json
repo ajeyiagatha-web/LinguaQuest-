@@ -1,0 +1,6 @@
+{
+  "name": "LinguaQuest",
+  "description": "Interactive language learning app with multi-topic curriculum, audio exercises, and practice sessions.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

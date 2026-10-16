@@ -1,0 +1,22 @@
+{
+  "name": "LinguaQuest - Language Learning",
+  "short_name": "LinguaQuest",
+  "description": "Learn Spanish, French, German, Yoruba, Igbo, Hausa and more with interactive lessons, speech practice, and vocabulary builders.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#10b981",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

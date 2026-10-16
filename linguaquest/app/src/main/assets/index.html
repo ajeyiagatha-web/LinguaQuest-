@@ -1,0 +1,2336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>LinguaQuest - Interactive Language Learning</title>
+  
+  <!-- Web App & FreeWebToAPK Meta Tags -->
+  <meta name="theme-color" content="#10b981">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="application-name" content="LinguaQuest">
+  <meta name="description" content="Learn any and every language in the world with extensive interactive exercises, AI conversation, audio pronunciation, and 3D flashcards.">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" type="image/png" href="icon.png">
+
+  <style>
+    :root {
+      --bg: #0f172a;
+      --surface: #1e293b;
+      --surface-card: #243247;
+      --surface-border: #334155;
+      --primary: #10b981;
+      --primary-dark: #059669;
+      --primary-light: #34d399;
+      --primary-soft: rgba(16, 185, 129, 0.16);
+      --accent: #6366f1;
+      --accent-soft: rgba(99, 102, 241, 0.16);
+      --amber: #f59e0b;
+      --amber-soft: rgba(245, 158, 11, 0.16);
+      --rose: #f43f5e;
+      --rose-soft: rgba(244, 63, 94, 0.16);
+      --cyan: #06b6d4;
+      --cyan-soft: rgba(6, 182, 212, 0.16);
+      --purple: #a855f7;
+      --purple-soft: rgba(168, 85, 247, 0.16);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --radius-lg: 20px;
+      --radius-md: 14px;
+      --radius-sm: 8px;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+
+    input, textarea {
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
+    body {
+      font-family: var(--font);
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    #app-container {
+      width: 100%;
+      max-width: 500px;
+      min-height: 100vh;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.75);
+      padding-bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* Top App Bar */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--surface-border);
+      padding: calc(12px + env(safe-area-inset-top, 0px)) 16px 12px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .lang-selector-btn {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--surface);
+      border: 1.5px solid var(--surface-border);
+      color: var(--text);
+      padding: 7px 14px;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      max-width: 190px;
+    }
+    .lang-selector-btn:active {
+      transform: scale(0.96);
+      background: var(--surface-card);
+    }
+    .lang-name-truncate {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .top-stats {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .stat-pill {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-weight: 800;
+      font-size: 0.82rem;
+      background: var(--surface);
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--surface-border);
+    }
+    .stat-pill.fire { color: #fb923c; }
+    .stat-pill.gem { color: #38bdf8; }
+    .stat-pill.pro {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #ffffff;
+      border: none;
+      font-size: 0.76rem;
+      padding: 6px 12px;
+      box-shadow: 0 2px 10px rgba(16, 185, 129, 0.35);
+    }
+    .stat-pill.free-count {
+      color: #f59e0b;
+      font-size: 0.76rem;
+    }
+
+    /* Bottom Navigation */
+    nav.bottom-nav {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      max-width: 500px;
+      height: calc(68px + env(safe-area-inset-bottom, 0px));
+      padding-bottom: env(safe-area-inset-bottom, 0px);
+      background: rgba(15, 23, 42, 0.98);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-top: 1px solid var(--surface-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      z-index: 50;
+    }
+
+    .nav-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      background: none;
+      border: none;
+      color: var(--text-dim);
+      font-size: 0.75rem;
+      font-weight: 800;
+      cursor: pointer;
+      padding: 8px 12px;
+      border-radius: 12px;
+      transition: all 0.2s ease;
+      flex: 1;
+    }
+    .nav-btn .icon { font-size: 1.35rem; transition: transform 0.2s ease; }
+    .nav-btn.active {
+      color: var(--primary-light);
+    }
+    .nav-btn.active .icon {
+      transform: translateY(-2px) scale(1.1);
+    }
+
+    /* Screen Views */
+    .view-content {
+      padding: 16px;
+      display: none;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .view-content.active {
+      display: flex;
+    }
+
+    /* Unit Banner */
+    .unit-hero {
+      background: linear-gradient(135deg, #059669 0%, #047857 100%);
+      border-radius: var(--radius-lg);
+      padding: 18px 20px;
+      color: white;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(5, 150, 105, 0.35);
+    }
+    .unit-hero-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+    .unit-hero .unit-badge {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      font-weight: 900;
+      background: rgba(255, 255, 255, 0.22);
+      padding: 3px 8px;
+      border-radius: 6px;
+      display: inline-block;
+    }
+    .guidebook-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      color: white;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s ease;
+    }
+    .guidebook-btn:active {
+      transform: scale(0.96);
+      background: rgba(255, 255, 255, 0.3);
+    }
+    .unit-hero h2 {
+      font-size: 1.3rem;
+      font-weight: 900;
+      margin-bottom: 4px;
+    }
+    .unit-hero p {
+      font-size: 0.86rem;
+      opacity: 0.95;
+      line-height: 1.35;
+    }
+
+    /* Topic Carousel */
+    .topic-carousel {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      padding: 4px 0 8px 0;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .topic-carousel::-webkit-scrollbar { display: none; }
+
+    .topic-chip {
+      flex: 0 0 auto;
+      background: var(--surface);
+      border: 1.5px solid var(--surface-border);
+      padding: 10px 14px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.83rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      transition: all 0.2s ease;
+    }
+    .topic-chip.active {
+      background: var(--surface-card);
+      border-color: var(--primary);
+      color: var(--text);
+      box-shadow: 0 0 16px rgba(16, 185, 129, 0.2);
+    }
+    .topic-chip .chip-icon {
+      font-size: 1.2rem;
+    }
+
+    /* Free Lessons Session Alert Box */
+    .session-alert-card {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-md);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .session-alert-info h4 {
+      font-size: 0.92rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .session-alert-info p {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 3px;
+    }
+    .session-counter-badge {
+      background: var(--surface-card);
+      border: 1px solid var(--surface-border);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 0.8rem;
+      color: var(--amber);
+      white-space: nowrap;
+    }
+    .session-counter-badge.unlocked {
+      color: var(--primary-light);
+      background: var(--primary-soft);
+      border-color: var(--primary);
+    }
+
+    /* Winding Learning Path */
+    .path-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 22px;
+      padding: 16px 0 35px 0;
+      position: relative;
+    }
+
+    .node-row {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+    }
+    .node-row.left { justify-content: flex-start; padding-left: 18%; }
+    .node-row.center { justify-content: center; }
+    .node-row.right { justify-content: flex-end; padding-right: 18%; }
+
+    .path-node {
+      width: 76px;
+      height: 76px;
+      border-radius: 50%;
+      background: var(--surface);
+      border: 4px solid var(--surface-border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      position: relative;
+      box-shadow: 0 8px 0 var(--surface-border);
+      transition: all 0.12s ease;
+    }
+    .path-node:active {
+      transform: translateY(6px);
+      box-shadow: 0 2px 0 var(--surface-border);
+    }
+    .path-node .node-icon {
+      font-size: 1.85rem;
+    }
+    .path-node.completed {
+      background: var(--amber);
+      border-color: #d97706;
+      box-shadow: 0 8px 0 #b45309;
+      color: #78350f;
+    }
+    .path-node.active-lesson {
+      background: var(--primary);
+      border-color: var(--primary-dark);
+      box-shadow: 0 8px 0 #047857;
+      animation: pulse-node 2s infinite ease-in-out;
+    }
+    @keyframes pulse-node {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.06); }
+    }
+
+    .node-label {
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      margin-top: 8px;
+      text-align: center;
+      max-width: 120px;
+    }
+
+    /* Interactive Lesson Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.96);
+      z-index: 100;
+      display: none;
+      flex-direction: column;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: calc(16px + env(safe-area-inset-top, 0px)) 16px calc(16px + env(safe-area-inset-bottom, 0px)) 16px;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 12px;
+    }
+    .close-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.6rem;
+      cursor: pointer;
+      padding: 6px;
+    }
+    .progress-bar-wrap {
+      flex: 1;
+      height: 12px;
+      background: var(--surface);
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid var(--surface-border);
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981, #34d399);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    .exercise-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 18px;
+      padding: 10px 0;
+      overflow-y: auto;
+    }
+
+    .prompt-card {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      text-align: center;
+    }
+    .prompt-type-badge {
+      font-size: 0.72rem;
+      font-weight: 900;
+      color: var(--primary-light);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+    .prompt-text {
+      font-size: 1.35rem;
+      font-weight: 900;
+      color: var(--text);
+      line-height: 1.3;
+    }
+    .prompt-sub {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+    .phonetic-badge {
+      display: inline-block;
+      margin-top: 8px;
+      font-size: 0.84rem;
+      color: var(--cyan);
+      background: var(--cyan-soft);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-weight: 700;
+    }
+
+    /* Audio Speaker Row */
+    .audio-play-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .speaker-btn {
+      background: var(--surface-card);
+      border: 2px solid var(--primary);
+      color: var(--primary-light);
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      font-size: 1.35rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .speaker-btn:active { transform: scale(0.92); }
+    .speaker-btn.turtle {
+      border-color: var(--amber);
+      color: var(--amber);
+      font-size: 1.2rem;
+      width: 44px;
+      height: 44px;
+    }
+
+    /* Sentence Builder / Word Jumble */
+    .sentence-assembled-box {
+      min-height: 68px;
+      background: var(--surface-card);
+      border: 2px dashed var(--surface-border);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      justify-content: center;
+    }
+    .word-bank {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 8px;
+    }
+    .word-chip {
+      background: var(--surface);
+      border: 2px solid var(--surface-border);
+      border-bottom: 4px solid var(--surface-border);
+      padding: 10px 16px;
+      border-radius: var(--radius-md);
+      color: var(--text);
+      font-size: 0.95rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: all 0.1s ease;
+    }
+    .word-chip:active {
+      transform: translateY(2px);
+      border-bottom-width: 2px;
+    }
+    .word-chip.used {
+      opacity: 0.25;
+      pointer-events: none;
+    }
+
+    /* Match Pairs Grid */
+    .match-pairs-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      width: 100%;
+    }
+    .pair-card {
+      background: var(--surface);
+      border: 2px solid var(--surface-border);
+      border-bottom: 4px solid var(--surface-border);
+      border-radius: var(--radius-md);
+      padding: 14px 10px;
+      text-align: center;
+      font-weight: 800;
+      font-size: 0.92rem;
+      cursor: pointer;
+      color: var(--text);
+      transition: all 0.15s ease;
+    }
+    .pair-card.selected {
+      border-color: var(--cyan);
+      background: var(--cyan-soft);
+      color: #67e8f9;
+      transform: scale(0.97);
+    }
+    .pair-card.matched {
+      border-color: var(--primary);
+      background: var(--primary-soft);
+      color: var(--primary-light);
+      pointer-events: none;
+      opacity: 0.55;
+    }
+    .pair-card.shake {
+      animation: shake 0.4s ease;
+      border-color: var(--rose);
+      background: var(--rose-soft);
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-6px); }
+      40%, 80% { transform: translateX(6px); }
+    }
+
+    /* Multiple Choice */
+    .choices-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+    }
+    .choice-btn {
+      background: var(--surface);
+      border: 2px solid var(--surface-border);
+      border-bottom: 4px solid var(--surface-border);
+      border-radius: var(--radius-md);
+      padding: 14px 18px;
+      color: var(--text);
+      font-weight: 800;
+      font-size: 0.96rem;
+      text-align: left;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.1s ease;
+    }
+    .choice-btn:active {
+      transform: translateY(2px);
+      border-bottom-width: 2px;
+    }
+    .choice-btn.selected {
+      border-color: var(--accent);
+      background: var(--accent-soft);
+      color: #c7d2fe;
+    }
+
+    /* Modal Action Buttons */
+    .modal-footer {
+      padding-top: 12px;
+      border-top: 1px solid var(--surface-border);
+    }
+    .action-btn {
+      width: 100%;
+      padding: 16px;
+      border-radius: var(--radius-md);
+      font-size: 1.05rem;
+      font-weight: 900;
+      border: none;
+      border-bottom: 4px solid #059669;
+      background: var(--primary);
+      color: white;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      transition: all 0.1s ease;
+    }
+    .action-btn:active {
+      transform: translateY(2px);
+      border-bottom-width: 2px;
+    }
+    .action-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+      border-bottom-color: transparent;
+    }
+
+    .feedback-sheet {
+      display: none;
+      padding: 14px 16px;
+      border-radius: var(--radius-md);
+      margin-bottom: 12px;
+      font-size: 0.92rem;
+      font-weight: 800;
+      line-height: 1.4;
+    }
+    .feedback-sheet.correct {
+      display: block;
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid var(--primary);
+      color: var(--primary-light);
+    }
+    .feedback-sheet.wrong {
+      display: block;
+      background: rgba(244, 63, 94, 0.2);
+      border: 1px solid var(--rose);
+      color: #fca5a5;
+    }
+
+    /* Unit Guidebook Drawer */
+    .guidebook-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.92);
+      z-index: 120;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .guidebook-modal.active { display: flex; }
+    .guidebook-card {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 440px;
+      padding: 22px;
+      max-height: 80vh;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* Permanent Lifetime Lock Screen */
+    #lifetime-lock-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 999;
+      background: radial-gradient(circle at top, #1e1b4b 0%, #0f172a 70%, #090d16 100%);
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: calc(24px + env(safe-area-inset-top, 0px)) 24px calc(24px + env(safe-area-inset-bottom, 0px)) 24px;
+      text-align: center;
+      max-width: 500px;
+      margin: 0 auto;
+      box-shadow: 0 0 100px rgba(0, 0, 0, 0.9);
+      overflow-y: auto;
+    }
+    #lifetime-lock-screen.active {
+      display: flex;
+    }
+    .lock-shield-icon {
+      font-size: 3.6rem;
+      margin-bottom: 16px;
+      filter: drop-shadow(0 0 24px rgba(245, 158, 11, 0.6));
+      animation: float-shield 3s ease-in-out infinite;
+    }
+    @keyframes float-shield {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+    .lock-title {
+      font-size: 1.55rem;
+      font-weight: 900;
+      color: #ffffff;
+      margin-bottom: 12px;
+      line-height: 1.25;
+    }
+    .lock-description {
+      font-size: 0.95rem;
+      color: #cbd5e1;
+      line-height: 1.5;
+      margin-bottom: 24px;
+      padding: 0 8px;
+    }
+    .lock-action-btn {
+      width: 100%;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      text-decoration: none;
+      border: none;
+      padding: 16px 20px;
+      border-radius: var(--radius-md);
+      font-size: 1.05rem;
+      font-weight: 900;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 8px 24px rgba(16, 185, 129, 0.4);
+      cursor: pointer;
+      margin-bottom: 22px;
+      transition: all 0.15s ease;
+    }
+    .key-input-card {
+      width: 100%;
+      background: rgba(30, 41, 59, 0.9);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .key-input-label {
+      font-size: 0.84rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      text-align: left;
+    }
+    .key-input-field {
+      width: 100%;
+      background: var(--bg);
+      border: 2px solid var(--surface-border);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--text);
+      letter-spacing: 2px;
+      text-align: center;
+      outline: none;
+    }
+    .key-input-field:focus { border-color: var(--primary); }
+    .unlock-submit-btn {
+      width: 100%;
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.95rem;
+      font-weight: 900;
+      cursor: pointer;
+    }
+    .key-error-msg {
+      font-size: 0.82rem;
+      font-weight: 800;
+      color: var(--rose);
+      margin-top: 4px;
+      display: none;
+    }
+    .key-error-msg.active { display: block; }
+
+    /* AI Tutor Screen */
+    .ai-chat-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      height: calc(100vh - 210px);
+    }
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      padding: 8px 0;
+    }
+    .chat-bubble {
+      max-width: 82%;
+      padding: 12px 16px;
+      border-radius: var(--radius-md);
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+    .chat-bubble.tutor {
+      align-self: flex-start;
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-bottom-left-radius: 4px;
+    }
+    .chat-bubble.user {
+      align-self: flex-end;
+      background: var(--primary-dark);
+      color: white;
+      border-bottom-right-radius: 4px;
+    }
+    .suggested-chips {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 6px;
+      scrollbar-width: none;
+    }
+    .suggest-chip {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+
+    /* 3D Flashcards Review */
+    .flashcard-stage {
+      perspective: 1000px;
+      height: 240px;
+      margin: 10px 0;
+      cursor: pointer;
+    }
+    .flashcard-inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: var(--radius-lg);
+    }
+    .flashcard-inner.flipped { transform: rotateY(180deg); }
+    .flashcard-front, .flashcard-back {
+      position: absolute;
+      inset: 0;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border-radius: var(--radius-lg);
+      background: var(--surface);
+      border: 2px solid var(--surface-border);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      text-align: center;
+    }
+    .flashcard-back {
+      background: var(--surface-card);
+      border-color: var(--primary);
+      transform: rotateY(180deg);
+    }
+
+    /* Enhanced Universal Language Selection Modal */
+    .lang-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.9);
+      z-index: 150;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+    }
+    .lang-modal.active { display: flex; }
+    .lang-modal-card {
+      background: var(--surface);
+      border: 1px solid var(--surface-border);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 440px;
+      padding: 20px;
+      max-height: 85vh;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .lang-search-input {
+      width: 100%;
+      background: var(--bg);
+      border: 1.5px solid var(--surface-border);
+      border-radius: var(--radius-md);
+      padding: 10px 14px;
+      color: var(--text);
+      font-size: 0.9rem;
+      outline: none;
+    }
+    .lang-search-input:focus { border-color: var(--primary); }
+
+    .category-pills-row {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+      scrollbar-width: none;
+    }
+    .cat-pill {
+      background: var(--surface-card);
+      border: 1px solid var(--surface-border);
+      color: var(--text-muted);
+      padding: 5px 12px;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 800;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .cat-pill.active {
+      background: var(--primary);
+      border-color: var(--primary);
+      color: white;
+    }
+
+    .lang-list-scroll {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      padding-right: 4px;
+    }
+    .lang-option {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 14px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      background: var(--surface-card);
+      border: 1px solid transparent;
+      font-weight: 800;
+      font-size: 0.92rem;
+    }
+    .lang-option:active, .lang-option.selected {
+      border-color: var(--primary);
+      background: var(--primary-soft);
+      color: var(--primary-light);
+    }
+
+    .add-custom-lang-btn {
+      background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(16, 185, 129, 0.2));
+      border: 1.5px dashed var(--primary);
+      color: var(--primary-light);
+      padding: 12px;
+      border-radius: var(--radius-md);
+      font-weight: 800;
+      font-size: 0.88rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+  </style>
+</head>
+<body>
+
+<div id="app-container">
+
+  <!-- Top App Bar -->
+  <header>
+    <button class="lang-selector-btn" id="lang-btn" onclick="openLangModal()">
+      <span id="current-lang-flag">🇪🇸</span>
+      <span id="current-lang-name" class="lang-name-truncate">Spanish</span>
+      <span style="font-size:0.7rem; color:var(--text-dim); margin-left:auto;">▼</span>
+    </button>
+    <div class="top-stats">
+      <div class="stat-pill fire">🔥 <span id="streak-count">3</span></div>
+      <div class="stat-pill gem">💎 <span id="gem-count">140</span></div>
+      <div class="stat-pill free-count" id="header-status-badge">⚡ 3 Free Left</div>
+    </div>
+  </header>
+
+  <!-- SCREEN 1: LEARN (Curriculum & Winding Path) -->
+  <main class="view-content active" id="view-learn">
+    <!-- Unit Header Banner -->
+    <section class="unit-hero">
+      <div class="unit-hero-top">
+        <span class="unit-badge" id="hero-unit-badge">Unit 1 • Essentials</span>
+        <button class="guidebook-btn" onclick="openGuidebook()">📖 Guidebook</button>
+      </div>
+      <h2 id="hero-unit-title">Greetings & First Words</h2>
+      <p id="hero-unit-sub">Master foundational expressions, polite greetings and pleasantries</p>
+    </section>
+
+    <!-- Multi-Topic Units Carousel -->
+    <section class="topic-carousel" id="topic-carousel">
+      <!-- Injected via JS -->
+    </section>
+
+    <!-- Free Lessons Session Counter Alert -->
+    <div class="session-alert-card">
+      <div class="session-alert-info">
+        <h4 id="session-counter-title">⚡ Practice Session Status</h4>
+        <p id="session-counter-sub">3 Free lessons included • Unlimited with Lifetime Key</p>
+      </div>
+      <div class="session-counter-badge" id="session-counter-badge">0 / 3 Used</div>
+    </div>
+
+    <!-- Winding Visual Learning Path -->
+    <div class="path-container" id="path-nodes-container">
+      <!-- Injected via JS -->
+    </div>
+  </main>
+
+  <!-- SCREEN 2: AI TUTOR (Conversation Practice Simulator) -->
+  <section class="view-content" id="view-tutor">
+    <div class="unit-hero" style="background: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);">
+      <span class="unit-badge">Live AI Tutor</span>
+      <h2>Chat Practice Simulator</h2>
+      <p>Speak or type with Sofia to build natural conversational fluency</p>
+    </div>
+
+    <div class="ai-chat-container">
+      <div class="chat-messages" id="chat-messages">
+        <div class="chat-bubble tutor" id="initial-tutor-bubble">
+          ¡Hola! Soy tu tutora Sofia. ¿Cómo estás hoy? ¡Cuéntame qué planes tienes para este fin de semana!
+        </div>
+      </div>
+
+      <div class="suggested-chips" id="suggested-chips">
+        <!-- Injected dynamically per language -->
+      </div>
+
+      <div style="display:flex; gap:8px;">
+        <input type="text" id="tutor-input" placeholder="Type a message..." style="flex:1; background:var(--surface); border:1px solid var(--surface-border); border-radius:var(--radius-md); padding:12px 16px; color:var(--text); outline:none; font-size:0.95rem;">
+        <button onclick="handleTutorSend()" class="action-btn" style="width:auto; padding:0 22px; font-size:0.9rem;">Send</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCREEN 3: REVIEW (Interactive Flashcards) -->
+  <section class="view-content" id="view-review">
+    <div class="unit-hero" style="background: linear-gradient(135deg, #d97706 0%, #b45309 100%);">
+      <span class="unit-badge">Vocabulary Hub</span>
+      <h2>3D Interactive Flashcards</h2>
+      <p>Tap card to flip • Master essential terms across daily units</p>
+    </div>
+
+    <div class="flashcard-stage" onclick="flipReviewCard()">
+      <div class="flashcard-inner" id="review-card-inner">
+        <div class="flashcard-front">
+          <span style="font-size:0.75rem; text-transform:uppercase; color:var(--text-muted); font-weight:800; margin-bottom:8px;" id="fc-category">Food & Dining</span>
+          <h2 style="font-size:2rem; font-weight:900;" id="fc-target">La cuenta, por favor</h2>
+          <p style="color:var(--text-muted); margin-top:8px; font-size:0.92rem;" id="fc-pronunciation">/lah KWEN-tah por fah-VOR/</p>
+          <div class="audio-play-row" onclick="event.stopPropagation()">
+            <button class="speaker-btn" onclick="playAudioText(document.getElementById('fc-target').textContent)">🔊</button>
+          </div>
+          <span style="margin-top:16px; font-size:0.8rem; color:var(--text-dim);">Tap to reveal meaning ↻</span>
+        </div>
+        <div class="flashcard-back">
+          <span style="font-size:0.75rem; text-transform:uppercase; color:var(--primary-light); font-weight:800; margin-bottom:8px;">English Meaning</span>
+          <h2 style="font-size:1.8rem; font-weight:900;" id="fc-english">The check, please</h2>
+          <p style="color:var(--text-muted); margin-top:12px; font-size:0.88rem;" id="fc-example">Example: "¿Nos trae la cuenta, por favor?"</p>
+          <span style="margin-top:16px; font-size:0.8rem; color:var(--text-dim);">Tap to flip back</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:10px;">
+      <button class="action-btn" onclick="nextReviewCard()" style="background:var(--surface); border-color:var(--surface-border); color:var(--text);">Next Card →</button>
+      <button class="action-btn" onclick="markCardMastered()">Mastered ✓</button>
+    </div>
+  </section>
+
+  <!-- SCREEN 4: PROFILE & ACCESS -->
+  <section class="view-content" id="view-profile">
+    <div style="display:flex; flex-direction:column; align-items:center; gap:12px; padding:16px 0;">
+      <div style="width:84px; height:84px; border-radius:50%; background:linear-gradient(135deg, #10b981, #06b6d4); display:flex; align-items:center; justify-content:center; font-size:2.4rem; box-shadow:0 6px 20px rgba(16, 185, 129, 0.4);">
+        🌟
+      </div>
+      <h2 style="font-size:1.4rem; font-weight:900;">Polyglot Learner</h2>
+      <span class="stat-pill pro" id="profile-access-pill">Free Tier • 3 Lessons</span>
+    </div>
+
+    <!-- FreeWebToAPK Converter Ready Card -->
+    <div style="background:linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(16, 185, 129, 0.15)); border:1.5px solid var(--accent); border-radius:var(--radius-lg); padding:18px; display:flex; flex-direction:column; gap:12px;">
+      <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-size:1.6rem;">📱</span>
+        <div>
+          <h4 style="font-size:1.05rem; font-weight:900; color:white;">FreeWebToAPK Ready</h4>
+          <p style="font-size:0.8rem; color:var(--text-muted);">Self-contained offline architecture for Web2APK</p>
+        </div>
+      </div>
+      <button class="action-btn" onclick="downloadFreeWebToApkPackage()" style="padding:14px; font-size:0.92rem; background:linear-gradient(135deg, #6366f1, #4f46e5); border-color:#3730a3;">
+        📥 Download Package for FreeWebToAPK
+      </button>
+    </div>
+
+    <!-- Access & License Management -->
+    <div class="session-alert-card" style="flex-direction:column; align-items:flex-start; gap:12px;">
+      <h4 style="font-size:1rem; font-weight:900;">🔑 Access & License Management</h4>
+      <p style="font-size:0.85rem; color:var(--text-muted); line-height:1.4;">
+        LinguaQuest includes 3 free lessons. Have an access key? Enter it here or unlock unlimited lifetime practice with zero ads or limits.
+      </p>
+      <button class="action-btn" onclick="showLifetimeLock()" style="padding:12px; font-size:0.92rem;">
+        Enter Access Key / Get Key
+      </button>
+    </div>
+  </section>
+
+  <!-- Bottom Navigation Bar -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" onclick="switchNav('learn')">
+      <span class="icon">🎓</span>
+      <span>Learn</span>
+    </button>
+    <button class="nav-btn" onclick="switchNav('tutor')">
+      <span class="icon">🤖</span>
+      <span>AI Tutor</span>
+    </button>
+    <button class="nav-btn" onclick="switchNav('review')">
+      <span class="icon">🃏</span>
+      <span>Review</span>
+    </button>
+    <button class="nav-btn" onclick="switchNav('profile')">
+      <span class="icon">👤</span>
+      <span>Profile</span>
+    </button>
+  </nav>
+
+  <!-- INTERACTIVE LESSON MODAL DIALOG -->
+  <div class="modal-overlay" id="lesson-modal">
+    <div class="modal-header">
+      <button class="close-btn" onclick="closeLessonModal()">✕</button>
+      <div class="progress-bar-wrap">
+        <div class="progress-bar-fill" id="lesson-progress-fill"></div>
+      </div>
+      <div style="font-weight:900; font-size:0.88rem; color:var(--rose);">❤️ <span id="lesson-hearts">5</span></div>
+    </div>
+
+    <div class="exercise-body" id="exercise-content">
+      <!-- Dynamic Exercise injected via JS -->
+    </div>
+
+    <div class="modal-footer">
+      <div class="feedback-sheet" id="feedback-sheet"></div>
+      <button class="action-btn" id="check-action-btn" onclick="handleExerciseCheck()">Check Answer</button>
+    </div>
+  </div>
+
+  <!-- UNIT GUIDEBOOK MODAL -->
+  <div class="guidebook-modal" id="guidebook-modal" onclick="closeGuidebook()">
+    <div class="guidebook-card" onclick="event.stopPropagation()">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 id="gb-title" style="font-size:1.15rem; font-weight:900;">Unit Guidebook</h3>
+        <button class="close-btn" onclick="closeGuidebook()">✕</button>
+      </div>
+      <div id="gb-content" style="display:flex; flex-direction:column; gap:12px; font-size:0.9rem; color:#cbd5e1; line-height:1.45;"></div>
+    </div>
+  </div>
+
+  <!-- UNIVERSAL LANGUAGE SELECTOR & SEARCH MODAL -->
+  <div class="lang-modal" id="lang-modal" onclick="closeLangModal()">
+    <div class="lang-modal-card" onclick="event.stopPropagation()">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <h3 style="font-size:1.15rem; font-weight:900;">Learn Any Language</h3>
+          <p style="font-size:0.78rem; color:var(--text-muted);">Choose from 60+ world languages or add any language</p>
+        </div>
+        <button class="close-btn" onclick="closeLangModal()">✕</button>
+      </div>
+
+      <!-- Search Input -->
+      <input type="text" id="lang-search-input" class="lang-search-input" placeholder="Search any language (e.g. Swahili, Greek, Navajo)..." oninput="filterLanguages()">
+
+      <!-- Category Filter Pills -->
+      <div class="category-pills-row" id="cat-pills">
+        <button class="cat-pill active" onclick="setCategoryFilter('all', this)">All</button>
+        <button class="cat-pill" onclick="setCategoryFilter('popular', this)">Popular</button>
+        <button class="cat-pill" onclick="setCategoryFilter('african', this)">African</button>
+        <button class="cat-pill" onclick="setCategoryFilter('european', this)">European</button>
+        <button class="cat-pill" onclick="setCategoryFilter('asian', this)">Asian</button>
+        <button class="cat-pill" onclick="setCategoryFilter('middle_east', this)">Middle East</button>
+        <button class="cat-pill" onclick="setCategoryFilter('classical', this)">Classical & Indigenous</button>
+      </div>
+
+      <!-- Add Any Custom Language Button -->
+      <button class="add-custom-lang-btn" onclick="promptAddCustomLanguage()">
+        <span>✨</span> <span>+ Learn Any Other Language in the World</span>
+      </button>
+
+      <!-- Language List -->
+      <div class="lang-list-scroll" id="lang-options-list">
+        <!-- Injected via JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- PERMANENT LOCK SCREEN -->
+  <div id="lifetime-lock-screen">
+    <div class="lock-shield-icon">🔐</div>
+    <h2 class="lock-title">Unlock Unlimited Lifetime Practice!</h2>
+    <p class="lock-description">
+      You have used your 3 free lessons. Get your Lifetime Access Key to unlock all app features with zero ads or limits.
+    </p>
+
+    <a href="https://linktr.ee/admin" target="_blank" rel="noopener noreferrer" class="lock-action-btn">
+      <span>Get Access Key</span>
+      <span>↗</span>
+    </a>
+
+    <div class="key-input-card">
+      <label class="key-input-label" for="access-key-input">Enter Access Key</label>
+      <input type="text" id="access-key-input" class="key-input-field" placeholder="Enter Access Key" autocomplete="off" autocapitalize="characters">
+      <button class="unlock-submit-btn" onclick="submitAccessKey()">Unlock Lifetime Access</button>
+      <div class="key-error-msg" id="key-error-msg">Invalid key. Please check your key or visit Linktree.</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  /* ========================================================================= */
+  /* Audio Synthesizer (Web Audio API) - 100% Offline & Reliable               */
+  /* ========================================================================= */
+  let audioCtx = null;
+  function getAudioContext() {
+    if (!audioCtx) {
+      const AudioContext = window.AudioContext || window.webkitAudioContext;
+      if (AudioContext) audioCtx = new AudioContext();
+    }
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
+  document.addEventListener('touchstart', () => getAudioContext(), { once: true, passive: true });
+  document.addEventListener('click', () => getAudioContext(), { once: true, passive: true });
+
+  function playTone(freq, type, duration, vol = 0.15) {
+    try {
+      const ctx = getAudioContext();
+      if (!ctx) return;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type || 'sine';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime);
+      gain.gain.setValueAtTime(vol, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + duration);
+    } catch(e) {}
+  }
+
+  function playSuccessSound() {
+    playTone(523.25, 'triangle', 0.12, 0.2);
+    setTimeout(() => playTone(659.25, 'triangle', 0.14, 0.2), 80);
+    setTimeout(() => playTone(783.99, 'triangle', 0.22, 0.2), 160);
+  }
+  function playErrorSound() {
+    playTone(220, 'sawtooth', 0.22, 0.2);
+    setTimeout(() => playTone(185, 'sawtooth', 0.28, 0.2), 100);
+  }
+  function playTapSound() {
+    playTone(480, 'sine', 0.06, 0.1);
+  }
+
+  /* Audio Speech Synthesis */
+  function playAudioText(text, rate = 1.0) {
+    if ('speechSynthesis' in window) {
+      try {
+        window.speechSynthesis.cancel();
+        const utt = new SpeechSynthesisUtterance(text);
+        utt.rate = rate;
+        const langCodeMap = {
+          es: 'es-ES', fr: 'fr-FR', de: 'de-DE', it: 'it-IT', pt: 'pt-BR',
+          ru: 'ru-RU', zh: 'zh-CN', ja: 'ja-JP', ko: 'ko-KR', ar: 'ar-SA',
+          hi: 'hi-IN', tr: 'tr-TR', nl: 'nl-NL', pl: 'pl-PL', sv: 'sv-SE',
+          el: 'el-GR', vi: 'vi-VN', th: 'th-TH', id: 'id-ID', sw: 'sw-KE',
+          yo: 'en-NG', ig: 'en-NG', ha: 'en-NG'
+        };
+        utt.lang = langCodeMap[currentLang.code] || 'en-US';
+        window.speechSynthesis.speak(utt);
+        return;
+      } catch(e) {}
+    }
+    playTone(587.33, 'sine', 0.15, 0.2);
+    setTimeout(() => playTone(739.99, 'sine', 0.18, 0.2), 100);
+  }
+
+  /* ========================================================================= */
+  /* App State & Persistence                                                   */
+  /* ========================================================================= */
+  const STORAGE_KEY = 'linguaquest_global_v4';
+  let appState = {
+    freeLessonsCompleted: 0,
+    hasLifetimeAccess: false,
+    selectedLangCode: 'es',
+    selectedUnitIndex: 0,
+    streak: 3,
+    gems: 140,
+    customLanguages: []
+  };
+
+  function loadState() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) appState = Object.assign(appState, JSON.parse(saved));
+    } catch(e) {}
+  }
+  function saveState() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+    } catch(e) {}
+  }
+
+  /* Android Hardware Back Button Support */
+  window.addEventListener('popstate', () => {
+    const lessonModal = document.getElementById('lesson-modal');
+    if (lessonModal && lessonModal.classList.contains('active')) {
+      closeLessonModal(false);
+      return;
+    }
+    const langModal = document.getElementById('lang-modal');
+    if (langModal && langModal.classList.contains('active')) {
+      closeLangModal(false);
+      return;
+    }
+    const gbModal = document.getElementById('guidebook-modal');
+    if (gbModal && gbModal.classList.contains('active')) {
+      closeGuidebook();
+      return;
+    }
+    const learnView = document.getElementById('view-learn');
+    if (learnView && !learnView.classList.contains('active')) {
+      switchNav('learn', false);
+    }
+  });
+
+  function pushModalState(type) {
+    try { window.history.pushState({ modal: type }, ''); } catch(e) {}
+  }
+
+  /* ========================================================================= */
+  /* Comprehensive 60+ World Languages Catalog                                 */
+  /* ========================================================================= */
+  const BASE_LANGUAGES = [
+    // Popular / Global
+    { code: 'es', name: 'Spanish', flag: '🇪🇸', cat: 'popular', greet: '¡Hola! ¿Cómo estás hoy?' },
+    { code: 'fr', name: 'French', flag: '🇫🇷', cat: 'popular', greet: 'Bonjour ! Comment ça va aujourd\'hui ?' },
+    { code: 'de', name: 'German', flag: '🇩🇪', cat: 'popular', greet: 'Hallo! Wie geht es dir heute?' },
+    { code: 'it', name: 'Italian', flag: '🇮🇹', cat: 'popular', greet: 'Ciao! Come va oggi?' },
+    { code: 'pt', name: 'Portuguese', flag: '🇧🇷', cat: 'popular', greet: 'Olá! Tudo bem com você?' },
+    { code: 'ja', name: 'Japanese', flag: '🇯🇵', cat: 'popular', greet: 'こんにちは！元気ですか？' },
+    { code: 'zh', name: 'Mandarin Chinese', flag: '🇨🇳', cat: 'popular', greet: '你好！你今天过得好吗？' },
+    { code: 'ko', name: 'Korean', flag: '🇰🇷', cat: 'popular', greet: '안녕하세요! 오늘 어떻게 지내세요?' },
+    { code: 'ru', name: 'Russian', flag: '🇷🇺', cat: 'popular', greet: 'Привет! Как ваши дела сегодня?' },
+    { code: 'hi', name: 'Hindi', flag: '🇮🇳', cat: 'popular', greet: 'नमस्ते! आज आप कैसे हैं?' },
+    { code: 'ar', name: 'Arabic', flag: '🇸🇦', cat: 'popular', greet: 'مرحباً! كيف حالك اليوم؟' },
+
+    // African Languages
+    { code: 'yo', name: 'Yoruba', flag: '🇳🇬', cat: 'african', greet: 'Bawo ni! E kaaro, se alafia ni?' },
+    { code: 'ig', name: 'Igbo', flag: '🇳🇬', cat: 'african', greet: 'Kedu! Ututu oma, kedu ka i mere?' },
+    { code: 'ha', name: 'Hausa', flag: '🇳🇬', cat: 'african', greet: 'Sannu! Ina kwana, yaya kake?' },
+    { code: 'sw', name: 'Swahili', flag: '🇰🇪', cat: 'african', greet: 'Habari! Jambo, habari za leo?' },
+    { code: 'zu', name: 'Zulu', flag: '🇿🇦', cat: 'african', greet: 'Sawubona! Unjani namhlanje?' },
+    { code: 'xh', name: 'Xhosa', flag: '🇿🇦', cat: 'african', greet: 'Molo! Unjani namhlanje?' },
+    { code: 'am', name: 'Amharic', flag: '🇪🇹', cat: 'african', greet: 'ሰላም! ዛሬ እንዴት ነህ?' },
+    { code: 'so', name: 'Somali', flag: '🇸🇴', cat: 'african', greet: 'Iska warran! Ma nabad baa?' },
+    { code: 'af', name: 'Afrikaans', flag: '🇿🇦', cat: 'african', greet: 'Goeie dag! Hoe gaan dit vandag?' },
+    { code: 'twi', name: 'Twi / Akan', flag: '🇬🇭', cat: 'african', greet: 'Ete sen! Wo ho te sen?' },
+    { code: 'wo', name: 'Wolof', flag: '🇸🇳', cat: 'african', greet: 'Na nga def! Jam nga am?' },
+
+    // European
+    { code: 'nl', name: 'Dutch', flag: '🇳🇱', cat: 'european', greet: 'Hallo! Hoe gaat het met je?' },
+    { code: 'sv', name: 'Swedish', flag: '🇸🇪', cat: 'european', greet: 'Hej! Hur mår du idag?' },
+    { code: 'no', name: 'Norwegian', flag: '🇳🇴', cat: 'european', greet: 'Hei! Hvordan har du det?' },
+    { code: 'da', name: 'Danish', flag: '🇩🇰', cat: 'european', greet: 'Hej! Hvordan går det?' },
+    { code: 'fi', name: 'Finnish', flag: '🇫🇮', cat: 'european', greet: 'Hei! Mitä kuuluu tänään?' },
+    { code: 'pl', name: 'Polish', flag: '🇵🇱', cat: 'european', greet: 'Cześć! Jak się dzisiaj masz?' },
+    { code: 'tr', name: 'Turkish', flag: '🇹🇷', cat: 'european', greet: 'Merhaba! Bugün nasılsın?' },
+    { code: 'el', name: 'Greek', flag: '🇬🇷', cat: 'european', greet: 'Γειά σας! Πώς είστε σήμερα;' },
+    { code: 'cs', name: 'Czech', flag: '🇨🇿', cat: 'european', greet: 'Ahoj! Jak se dnes máš?' },
+    { code: 'hu', name: 'Hungarian', flag: '🇭🇺', cat: 'european', greet: 'Szia! Hogy vagy ma?' },
+    { code: 'ro', name: 'Romanian', flag: '🇷🇴', cat: 'european', greet: 'Bună! Ce mai faci astăzi?' },
+    { code: 'uk', name: 'Ukrainian', flag: '🇺🇦', cat: 'european', greet: 'Привіт! Як у тебе справи?' },
+    { code: 'ga', name: 'Irish Gaelic', flag: '🇮🇪', cat: 'european', greet: 'Dia dhuit! Conas atá tú inniu?' },
+    { code: 'gd', name: 'Scottish Gaelic', flag: '🏴󠁧󠁢󠁳󠁣󠁴󠁿', cat: 'european', greet: 'Halò! Ciamar a tha thu an-diugh?' },
+    { code: 'cy', name: 'Welsh', flag: '🏴󠁧󠁢󠁷󠁬󠁳󠁿', cat: 'european', greet: 'Helo! Sut wyt ti heddiw?' },
+    { code: 'ca', name: 'Catalan', flag: '🇪🇸', cat: 'european', greet: 'Hola! Com estàs avui?' },
+    { code: 'eu', name: 'Basque (Euskara)', flag: '🇪🇸', cat: 'european', greet: 'Kaixo! Nola zaude gaur?' },
+    { code: 'is', name: 'Icelandic', flag: '🇮🇸', cat: 'european', greet: 'Halló! Hvernig hefur þú það?' },
+
+    // Asian & Pacific
+    { code: 'vi', name: 'Vietnamese', flag: '🇻🇳', cat: 'asian', greet: 'Xin chào! Hôm nay bạn thế nào?' },
+    { code: 'th', name: 'Thai', flag: '🇹🇭', cat: 'asian', greet: 'สวัสดี! วันนี้คุณเป็นอย่างไรบ้าง?' },
+    { code: 'id', name: 'Indonesian', flag: '🇮🇩', cat: 'asian', greet: 'Halo! Bagaimana kabarmu hari ini?' },
+    { code: 'tl', name: 'Tagalog / Filipino', flag: '🇵🇭', cat: 'asian', greet: 'Kamusta! Kumusta ang araw mo?' },
+    { code: 'ms', name: 'Malay', flag: '🇲🇾', cat: 'asian', greet: 'Hai! Apa khabar hari ini?' },
+    { code: 'bn', name: 'Bengali', flag: '🇧🇩', cat: 'asian', greet: 'নমস্কার! আপনি আজ কেমন আছেন?' },
+    { code: 'pa', name: 'Punjabi', flag: '🇮🇳', cat: 'asian', greet: 'ਸਤਿ ਸ੍ਰੀ ਅਕਾਲ! ਤੁਸੀਂ ਕਿਵੇਂ ਹੋ?' },
+    { code: 'ta', name: 'Tamil', flag: '🇮🇳', cat: 'asian', greet: 'வணக்கம்! இன்று நீங்கள் எப்படி இருக்கிறீர்கள்?' },
+    { code: 'te', name: 'Telugu', flag: '🇮🇳', cat: 'asian', greet: 'నమస్కారం! మీరు ఎలా ఉన్నారు?' },
+    { code: 'mr', name: 'Marathi', flag: '🇮🇳', cat: 'asian', greet: 'नमस्कार! आज कसे आहात?' },
+    { code: 'haw', name: 'Hawaiian', flag: '🌺', cat: 'asian', greet: 'Aloha! Pehea \'oe i kēia lā?' },
+    { code: 'mi', name: 'Maori', flag: '🇳🇿', cat: 'asian', greet: 'Kia ora! Kei te pēhea koe?' },
+
+    // Middle Eastern & Central Asian
+    { code: 'fa', name: 'Persian (Farsi)', flag: '🇮🇷', cat: 'middle_east', greet: 'سلام! حال شما چطوره؟' },
+    { code: 'he', name: 'Hebrew', flag: '🇮🇱', cat: 'middle_east', greet: 'שלום! מה שלומך היום?' },
+    { code: 'ur', name: 'Urdu', flag: '🇵🇰', cat: 'middle_east', greet: 'السلام علیکم! آپ کیسے ہیں؟' },
+
+    // Classical & Indigenous
+    { code: 'la', name: 'Latin', flag: '🏛️', cat: 'classical', greet: 'Salve! Quomodo te habes hodie?' },
+    { code: 'grc', name: 'Ancient Greek', flag: '🏛️', cat: 'classical', greet: 'Χαῖρε! Πῶς ἔχεις σήμερον;' },
+    { code: 'sa', name: 'Sanskrit', flag: '🕉️', cat: 'classical', greet: 'नमस्ते! अद्य भवान् कथम् अस्ति?' },
+    { code: 'eo', name: 'Esperanto', flag: '🌐', cat: 'classical', greet: 'Saluton! Kiel vi fartas hodiaŭ?' },
+    { code: 'qu', name: 'Quechua', flag: '🇵🇪', cat: 'classical', greet: 'Allillanchu! Allillanmi kani.' },
+    { code: 'gn', name: 'Guarani', flag: '🇵🇾', cat: 'classical', greet: 'Mba\'éichapa! Iporãite.' },
+    { code: 'nv', name: 'Navajo', flag: '🏜️', cat: 'classical', greet: 'Yá\'át\'ééh! Haash yinilyé?' },
+    { code: 'ht', name: 'Haitian Creole', flag: '🇭🇹', cat: 'classical', greet: 'Bonjou! Kijan ou ye jodi a?' }
+  ];
+
+  /* Active catalog combining base + any user-created custom languages */
+  let ALL_LANGUAGES = [...BASE_LANGUAGES];
+
+  /* ========================================================================= */
+  /* Dynamic Universal Curriculum Engine for ANY Language                      */
+  /* ========================================================================= */
+  const DICTIONARIES = {
+    es: {
+      u1_hello: 'Buenos días, ¿cómo estás?', u1_words: ['Buenos', 'días,', '¿cómo', 'estás?'], u1_dist: ['gracias', 'noche'],
+      pairs1: [{ t: 'Hola', e: 'Hello' }, { t: 'Gracias', e: 'Thank you' }, { t: 'Por favor', e: 'Please' }, { t: 'Adiós', e: 'Goodbye' }],
+      listen1: 'Mucho gusto en conocerte.', listen1_opt: ['Nice to meet you.', 'Where is the exit?', 'How much is this?'],
+      u2_coffee: 'Un café con leche, por favor.', u2_words: ['Un', 'café', 'con', 'leche,', 'por', 'favor.'], u2_dist: ['agua', 'té'],
+      pairs2: [{ t: 'La cuenta', e: 'The bill' }, { t: 'El agua', e: 'Water' }, { t: 'La mesa', e: 'Table' }, { t: 'El menú', e: 'Menu' }],
+      gb_tips: ['Use "¿Cómo está usted?" with elders for respect.', '"Por favor" goes at the end of requests.']
+    },
+    fr: {
+      u1_hello: 'Bonjour, comment allez-vous ?', u1_words: ['Bonjour,', 'comment', 'allez-vous', '?'], u1_dist: ['soir', 'merci'],
+      pairs1: [{ t: 'Bonjour', e: 'Hello' }, { t: 'Merci', e: 'Thank you' }, { t: 'S\'il vous plaît', e: 'Please' }, { t: 'Au revoir', e: 'Goodbye' }],
+      listen1: 'Enchanté de faire votre connaissance.', listen1_opt: ['Nice to meet you.', 'What time is it?', 'Where is the metro?'],
+      u2_coffee: 'Un café s\'il vous plaît.', u2_words: ['Un', 'café', 's\'il', 'vous', 'plaît.'], u2_dist: ['thé', 'croissant'],
+      pairs2: [{ t: 'L\'addition', e: 'The check' }, { t: 'L\'eau', e: 'Water' }, { t: 'Le pain', e: 'Bread' }, { t: 'La table', e: 'Table' }],
+      gb_tips: ['Always greet shopkeepers with "Bonjour" before asking questions.', 'Use "vous" for polite interactions.']
+    },
+    de: {
+      u1_hello: 'Guten Morgen, wie geht es dir?', u1_words: ['Guten', 'Morgen,', 'wie', 'geht', 'es', 'dir?'], u1_dist: ['danke', 'abend'],
+      pairs1: [{ t: 'Hallo', e: 'Hello' }, { t: 'Danke', e: 'Thank you' }, { t: 'Bitte', e: 'Please' }, { t: 'Tschüss', e: 'Goodbye' }],
+      listen1: 'Schön, Sie kennenzulernen.', listen1_opt: ['Pleased to meet you.', 'Where is the train?', 'How much?'],
+      u2_coffee: 'Einen Kaffee bitte.', u2_words: ['Einen', 'Kaffee', 'bitte.'], u2_dist: ['Tee', 'Wasser'],
+      pairs2: [{ t: 'Die Rechnung', e: 'The bill' }, { t: 'Das Wasser', e: 'Water' }, { t: 'Die Speisekarte', e: 'Menu' }, { t: 'Das Brot', e: 'Bread' }],
+      gb_tips: ['All German nouns are capitalized.', '"Sie" is formal you, "du" is informal.']
+    },
+    yo: {
+      u1_hello: 'Ẹ ku aarọ, bawo ni?', u1_words: ['Ẹ', 'ku', 'aarọ,', 'bawo', 'ni?'], u1_dist: ['o dabo', 'o ṣe'],
+      pairs1: [{ t: 'Bawo ni', e: 'How are you' }, { t: 'E se', e: 'Thank you' }, { t: 'E jowo', e: 'Please' }, { t: 'O dabo', e: 'Goodbye' }],
+      listen1: 'Inu mi dun lati ri e.', listen1_opt: ['Glad to meet you.', 'Where is the market?', 'Thank you very much.'],
+      u2_coffee: 'Mo fe omi tutu, e jowo.', u2_words: ['Mo', 'fe', 'omi', 'tutu,', 'e', 'jowo.'], u2_dist: ['ounje', 'eko'],
+      pairs2: [{ t: 'Omi', e: 'Water' }, { t: 'Ounje', e: 'Food' }, { t: 'Eja', e: 'Fish' }, { t: 'Iresi', e: 'Rice' }],
+      gb_tips: ['The "Ẹ" prefix denotes deep respect for elders and teachers.', 'Tone marks (Do Re Mi) change meanings.']
+    },
+    ig: {
+      u1_hello: 'Ututu ọma, kedu ka ị mere?', u1_words: ['Ututu', 'ọma,', 'kedu', 'ka', 'ị', 'mere?'], u1_dist: ['dalu', 'biko'],
+      pairs1: [{ t: 'Kedu', e: 'Hello / How are you' }, { t: 'Dalu', e: 'Thank you' }, { t: 'Biko', e: 'Please' }, { t: 'Ka omesia', e: 'Goodbye' }],
+      listen1: 'Obi di m anwuri izute gi.', listen1_opt: ['Pleased to meet you.', 'Where is the road?', 'See you soon.'],
+      u2_coffee: 'Biko wetara m mmiri.', u2_words: ['Biko', 'wetara', 'm', 'mmiri.'], u2_dist: ['nri', 'anu'],
+      pairs2: [{ t: 'Mmiri', e: 'Water' }, { t: 'Nri', e: 'Food' }, { t: 'Anya', e: 'Eye' }, { t: 'Ego', e: 'Money' }],
+      gb_tips: ['"Kedu" is the universal welcoming opener in Igbo.', 'Respect for elders is woven into greeting suffixes.']
+    },
+    ha: {
+      u1_hello: 'Ina kwana, yaya kake?', u1_words: ['Ina', 'kwana,', 'yaya', 'kake?'], u1_dist: ['na gode', 'sannu'],
+      pairs1: [{ t: 'Sannu', e: 'Hello' }, { t: 'Na gode', e: 'Thank you' }, { t: 'Don Allah', e: 'Please' }, { t: 'Sai anjima', e: 'Goodbye' }],
+      listen1: 'Ina jin dadin haduwa da kai.', listen1_opt: ['Pleased to meet you.', 'How much is it?', 'Safe journey.'],
+      u2_coffee: 'Ina son ruwa, don Allah.', u2_words: ['Ina', 'son', 'ruwa,', 'don', 'Allah.'], u2_dist: ['abinci', 'nama'],
+      pairs2: [{ t: 'Ruwa', e: 'Water' }, { t: 'Abinci', e: 'Food' }, { t: 'Kudi', e: 'Money' }, { t: 'Kasuwa', e: 'Market' }],
+      gb_tips: ['"Sannu" accompanied by a slight bow is the warmest welcome.', '"Na gode" expresses heartfelt gratitude.']
+    },
+    sw: {
+      u1_hello: 'Habari za asubuhi, hujambo?', u1_words: ['Habari', 'za', 'asubuhi,', 'hujambo?'], u1_dist: ['asante', 'kwaheri'],
+      pairs1: [{ t: 'Jambo', e: 'Hello' }, { t: 'Asante', e: 'Thank you' }, { t: 'Tafadhali', e: 'Please' }, { t: 'Kwaheri', e: 'Goodbye' }],
+      listen1: 'Nimefurahi kukutana nawe.', listen1_opt: ['Happy to meet you.', 'Where is the hotel?', 'Good night.'],
+      u2_coffee: 'Kahawa moja, tafadhali.', u2_words: ['Kahawa', 'moja,', 'tafadhali.'], u2_dist: ['maji', 'chai'],
+      pairs2: [{ t: 'Maji', e: 'Water' }, { t: 'Chakula', e: 'Food' }, { t: 'Bili', e: 'The bill' }, { t: 'Meza', e: 'Table' }],
+      gb_tips: ['"Hujambo" is answered with "Sijambo" (I am well).', 'Respect elders with "Shikamoo", answered with "Marahaba".']
+    }
+  };
+
+  function buildCurriculumForLanguage(lang) {
+    const dict = DICTIONARIES[lang.code] || {
+      u1_hello: `${lang.name} Hello & Good day`,
+      u1_words: [`${lang.name}`, 'Hello,', 'how', 'are', 'you?'],
+      u1_dist: ['thanks', 'night'],
+      pairs1: [{ t: 'Hello', e: 'Greeting' }, { t: 'Thank you', e: 'Gratitude' }, { t: 'Please', e: 'Courtesy' }, { t: 'Goodbye', e: 'Farewell' }],
+      listen1: `Welcome to learning ${lang.name}!`,
+      listen1_opt: ['Nice to meet you.', 'Where is the bus?', 'How much?'],
+      u2_coffee: `Coffee in ${lang.name}, please.`,
+      u2_words: ['Coffee', 'please,', 'thank', 'you.'],
+      u2_dist: ['tea', 'water'],
+      pairs2: [{ t: 'Water', e: 'Drink' }, { t: 'Food', e: 'Meal' }, { t: 'Bill', e: 'Account' }, { t: 'Menu', e: 'Card' }],
+      gb_tips: [`Master basic courtesies first in ${lang.name}.`, 'Listening to authentic tones helps retain word patterns.']
+    };
+
+    return [
+      {
+        id: 'u1', title: 'Greetings & Essentials', sub: `Polite greetings and introductions in ${lang.name}`, icon: '👋',
+        guidebook: dict.gb_tips,
+        lessons: [
+          {
+            type: 'jumble',
+            prompt: `Translate into ${lang.name}:`,
+            target: 'Good morning, how are you?',
+            expected: dict.u1_words,
+            bank: [...dict.u1_words, ...dict.u1_dist].sort(() => Math.random() - 0.5),
+            tip: `Everyday polite morning greeting in ${lang.name}.`
+          },
+          {
+            type: 'match',
+            prompt: `Match the ${lang.name} pairs:`,
+            pairs: dict.pairs1
+          },
+          {
+            type: 'listen',
+            prompt: `Listen and select the meaning:`,
+            audioText: dict.listen1,
+            options: dict.listen1_opt,
+            correctIndex: 0
+          }
+        ]
+      },
+      {
+        id: 'u2', title: 'Food & Dining Out', sub: `Café orders and dining expressions in ${lang.name}`, icon: '☕',
+        guidebook: ['Practice ordering with local courtesy.', 'Always thank your server.'],
+        lessons: [
+          {
+            type: 'jumble',
+            prompt: `Order a beverage in ${lang.name}:`,
+            target: 'A coffee, please.',
+            expected: dict.u2_words,
+            bank: [...dict.u2_words, ...dict.u2_dist].sort(() => Math.random() - 0.5),
+            tip: 'Standard café request.'
+          },
+          {
+            type: 'match',
+            prompt: `Match dining terms:`,
+            pairs: dict.pairs2
+          }
+        ]
+      },
+      {
+        id: 'u3', title: 'Travel & City Transit', sub: `Finding your way around town in ${lang.name}`, icon: '🚆',
+        guidebook: ['"Where is..." is key when navigating unfamiliar cities.'],
+        lessons: [
+          {
+            type: 'choice',
+            prompt: `How do you ask for directions in ${lang.name}?`,
+            options: [`Where is the station? (${lang.name})`, 'What time is dinner?', 'Good night.'],
+            correctIndex: 0
+          },
+          {
+            type: 'match',
+            prompt: `Match transit words:`,
+            pairs: [{ t: 'Station', e: 'Transit' }, { t: 'Ticket', e: 'Pass' }, { t: 'Hotel', e: 'Lodging' }, { t: 'Exit', e: 'Way Out' }]
+          }
+        ]
+      },
+      {
+        id: 'u4', title: 'Numbers & Shopping', sub: `Market bargaining, prices and counting`, icon: '🛍️',
+        guidebook: ['Counting 1-10 opens up market shopping.'],
+        lessons: [
+          {
+            type: 'choice',
+            prompt: `How do you ask "How much does it cost?"`,
+            options: ['How much is this?', 'What is your name?', 'Where are you going?'],
+            correctIndex: 0
+          }
+        ]
+      },
+      {
+        id: 'u5', title: 'Social Life & Friends', sub: `Making acquaintances and conversation`, icon: '🎉',
+        guidebook: ['Complimenting your host is universal hospitality.'],
+        lessons: [
+          {
+            type: 'choice',
+            prompt: `Say "Glad to meet you":`,
+            options: ['Pleased to make your acquaintance', 'I have to leave now', 'Excuse me'],
+            correctIndex: 0
+          }
+        ]
+      },
+      {
+        id: 'u6', title: 'Emergencies & Health', sub: `Urgent medical and safety phrases`, icon: '🏥',
+        guidebook: ['Always memorize the local word for "Help!" and "Doctor".'],
+        lessons: [
+          {
+            type: 'choice',
+            prompt: `How do you call out for urgent help?`,
+            options: ['Help! / Emergency!', 'Safe travels!', 'Have a nice day!'],
+            correctIndex: 0
+          }
+        ]
+      }
+    ];
+  }
+
+  let currentLang = BASE_LANGUAGES[0];
+  let currentUnits = buildCurriculumForLanguage(currentLang);
+  let activeExerciseIndex = 0;
+  let activeLessonQueue = [];
+  let userJumblePicked = [];
+  let userMatchSelected = null;
+  let matchesSolved = 0;
+  let selectedChoiceIndex = -1;
+  let selectedCategory = 'all';
+
+  /* ========================================================================= */
+  /* Initialize App                                                            */
+  /* ========================================================================= */
+  loadState();
+
+  // Combine custom languages from local storage
+  if (appState.customLanguages && Array.isArray(appState.customLanguages)) {
+    appState.customLanguages.forEach(cl => {
+      if (!ALL_LANGUAGES.some(l => l.code === cl.code)) {
+        ALL_LANGUAGES.push(cl);
+      }
+    });
+  }
+
+  currentLang = ALL_LANGUAGES.find(l => l.code === appState.selectedLangCode) || ALL_LANGUAGES[0];
+  currentUnits = buildCurriculumForLanguage(currentLang);
+
+  updateHeaderAndLockState();
+  renderUnitCarousel();
+  renderPathNodes();
+  updateTutorSuggestions();
+
+  function updateHeaderAndLockState() {
+    document.getElementById('current-lang-flag').textContent = currentLang.flag;
+    document.getElementById('current-lang-name').textContent = currentLang.name;
+    document.getElementById('streak-count').textContent = appState.streak;
+    document.getElementById('gem-count').textContent = appState.gems;
+
+    const count = appState.freeLessonsCompleted;
+    const isPro = appState.hasLifetimeAccess;
+
+    const headerBadge = document.getElementById('header-status-badge');
+    const sessionBadge = document.getElementById('session-counter-badge');
+    const sessionSub = document.getElementById('session-counter-sub');
+    const profilePill = document.getElementById('profile-access-pill');
+
+    if (isPro) {
+      headerBadge.className = 'stat-pill pro';
+      headerBadge.textContent = '✨ PRO Lifetime';
+      sessionBadge.className = 'session-counter-badge unlocked';
+      sessionBadge.textContent = 'UNLOCKED • LIFETIME';
+      sessionSub.textContent = 'Permanent unlimited access active across all world languages.';
+      profilePill.className = 'stat-pill pro';
+      profilePill.textContent = 'PRO • Lifetime Access (AIPro999)';
+    } else {
+      headerBadge.className = 'stat-pill free-count';
+      const remaining = Math.max(0, 3 - count);
+      headerBadge.textContent = `⚡ ${remaining} Free Left`;
+      sessionBadge.className = 'session-counter-badge';
+      sessionBadge.textContent = `${count} / 3 Used`;
+      sessionSub.textContent = '3 Free lessons included • Unlimited with Lifetime Key';
+      profilePill.className = 'stat-pill free-count';
+      profilePill.textContent = `Free Tier • ${count}/3 Lessons Used`;
+    }
+
+    if (!isPro && count >= 3) {
+      document.getElementById('lifetime-lock-screen').classList.add('active');
+    } else {
+      document.getElementById('lifetime-lock-screen').classList.remove('active');
+    }
+  }
+
+  function showLifetimeLock() {
+    playTapSound();
+    document.getElementById('lifetime-lock-screen').classList.add('active');
+  }
+
+  function submitAccessKey() {
+    const input = document.getElementById('access-key-input');
+    const errorEl = document.getElementById('key-error-msg');
+    const typed = (input.value || '').trim();
+
+    if (typed.toUpperCase() === 'AIPRO999') {
+      playSuccessSound();
+      appState.hasLifetimeAccess = true;
+      saveState();
+      errorEl.classList.remove('active');
+      document.getElementById('lifetime-lock-screen').classList.remove('active');
+      updateHeaderAndLockState();
+      alert('🎉 Lifetime Access Activated! You now have unlimited practice with zero ads across all languages.');
+    } else {
+      playErrorSound();
+      errorEl.classList.add('active');
+    }
+  }
+
+  /* Unit Carousel */
+  function renderUnitCarousel() {
+    const container = document.getElementById('topic-carousel');
+    container.innerHTML = '';
+    currentUnits.forEach((unit, idx) => {
+      const chip = document.createElement('div');
+      chip.className = `topic-chip ${idx === appState.selectedUnitIndex ? 'active' : ''}`;
+      chip.innerHTML = `<span class="chip-icon">${unit.icon}</span> <span>${unit.title}</span>`;
+      chip.onclick = () => selectUnit(idx);
+      container.appendChild(chip);
+    });
+    updateHeroBanner();
+  }
+
+  function selectUnit(idx) {
+    playTapSound();
+    appState.selectedUnitIndex = idx;
+    saveState();
+    renderUnitCarousel();
+    renderPathNodes();
+  }
+
+  function updateHeroBanner() {
+    const unit = currentUnits[appState.selectedUnitIndex] || currentUnits[0];
+    document.getElementById('hero-unit-badge').textContent = `Unit ${appState.selectedUnitIndex + 1} • ${unit.title}`;
+    document.getElementById('hero-unit-title').textContent = unit.title;
+    document.getElementById('hero-unit-sub').textContent = unit.sub;
+  }
+
+  /* Guidebook Modal */
+  function openGuidebook() {
+    playTapSound();
+    const unit = currentUnits[appState.selectedUnitIndex] || currentUnits[0];
+    document.getElementById('gb-title').textContent = `📖 Guidebook: ${unit.title}`;
+    const content = document.getElementById('gb-content');
+    content.innerHTML = `
+      <div style="background:var(--surface-card); padding:14px; border-radius:var(--radius-md); border-left:4px solid var(--primary);">
+        <strong style="color:var(--primary-light);">Key Grammar & Etiquette Insights:</strong>
+        <ul style="margin-top:8px; padding-left:18px; display:flex; flex-direction:column; gap:6px;">
+          ${(unit.guidebook || ['Listen attentively to native pronunciation patterns.', 'Practice daily to build fluency.']).map(item => `<li>${item}</li>`).join('')}
+        </ul>
+      </div>
+      <div style="background:var(--surface-card); padding:14px; border-radius:var(--radius-md); border-left:4px solid var(--accent);">
+        <strong style="color:#c7d2fe;">Language Focus:</strong>
+        <p style="margin-top:4px;">You are currently learning <strong>${currentLang.name} (${currentLang.flag})</strong>. This unit provides essential vocabulary and real-world conversation structures.</p>
+      </div>
+    `;
+    document.getElementById('guidebook-modal').classList.add('active');
+    pushModalState('guidebook');
+  }
+  function closeGuidebook() {
+    playTapSound();
+    document.getElementById('guidebook-modal').classList.remove('active');
+  }
+
+  /* Render Winding Path */
+  function renderPathNodes() {
+    const container = document.getElementById('path-nodes-container');
+    container.innerHTML = '';
+    const unit = currentUnits[appState.selectedUnitIndex] || currentUnits[0];
+    const alignments = ['center', 'left', 'center', 'right'];
+
+    unit.lessons.forEach((lesson, lIdx) => {
+      const row = document.createElement('div');
+      row.className = `node-row ${alignments[lIdx % alignments.length]}`;
+
+      const node = document.createElement('div');
+      const isCompleted = lIdx < appState.freeLessonsCompleted || appState.hasLifetimeAccess;
+      const isCurrent = lIdx === appState.freeLessonsCompleted && !appState.hasLifetimeAccess;
+
+      node.className = `path-node ${isCompleted ? 'completed' : ''} ${isCurrent ? 'active-lesson' : ''}`;
+      node.innerHTML = `<span class="node-icon">${lesson.type === 'jumble' ? '🧩' : (lesson.type === 'match' ? '⚡' : '🎧')}</span>`;
+      node.onclick = () => startLesson(lesson);
+
+      const wrap = document.createElement('div');
+      wrap.style.display = 'flex';
+      wrap.style.flexDirection = 'column';
+      wrap.style.alignItems = 'center';
+      wrap.appendChild(node);
+
+      const label = document.createElement('div');
+      label.className = 'node-label';
+      label.textContent = `Lesson ${lIdx + 1}`;
+      wrap.appendChild(label);
+
+      row.appendChild(wrap);
+      container.appendChild(row);
+    });
+  }
+
+  /* Lesson Exercises */
+  function startLesson(lesson) {
+    playTapSound();
+    if (!appState.hasLifetimeAccess && appState.freeLessonsCompleted >= 3) {
+      showLifetimeLock();
+      return;
+    }
+
+    activeLessonQueue = [lesson];
+    activeExerciseIndex = 0;
+    document.getElementById('lesson-hearts').textContent = '5';
+    document.getElementById('lesson-modal').classList.add('active');
+    pushModalState('lesson');
+    loadCurrentExercise();
+  }
+
+  function closeLessonModal(shouldPopHistory = true) {
+    playTapSound();
+    document.getElementById('lesson-modal').classList.remove('active');
+    if (shouldPopHistory && window.history.state && window.history.state.modal === 'lesson') {
+      try { window.history.back(); } catch(e) {}
+    }
+  }
+
+  function loadCurrentExercise() {
+    const ex = activeLessonQueue[activeExerciseIndex];
+    const container = document.getElementById('exercise-content');
+    const sheet = document.getElementById('feedback-sheet');
+    sheet.className = 'feedback-sheet';
+    sheet.textContent = '';
+    document.getElementById('check-action-btn').textContent = 'Check Answer';
+    document.getElementById('check-action-btn').onclick = handleExerciseCheck;
+
+    const pct = ((activeExerciseIndex) / activeLessonQueue.length) * 100;
+    document.getElementById('lesson-progress-fill').style.width = `${pct}%`;
+
+    container.innerHTML = '';
+
+    if (ex.type === 'jumble') {
+      userJumblePicked = [];
+      container.innerHTML = `
+        <div class="prompt-card">
+          <div class="prompt-type-badge">Sentence Builder</div>
+          <div class="prompt-sub">${ex.prompt}</div>
+          <div class="prompt-text">${ex.target}</div>
+          <div class="audio-play-row">
+            <button class="speaker-btn" onclick="playAudioText('${ex.expected.join(' ')}')">🔊</button>
+            <button class="speaker-btn turtle" onclick="playAudioText('${ex.expected.join(' ')}', 0.6)">🐢</button>
+          </div>
+          ${ex.tip ? `<div class="phonetic-badge">💡 Tip: ${ex.tip}</div>` : ''}
+        </div>
+        <div class="sentence-assembled-box" id="assembled-box">
+          <span style="color:var(--text-dim); font-size:0.85rem;" id="assemble-placeholder">Tap words below to build sentence</span>
+        </div>
+        <div class="word-bank" id="word-bank"></div>
+      `;
+      const bank = document.getElementById('word-bank');
+      ex.bank.forEach((w, idx) => {
+        const chip = document.createElement('button');
+        chip.className = 'word-chip';
+        chip.textContent = w;
+        chip.id = `chip-${idx}`;
+        chip.onclick = () => pickJumbleWord(w, idx);
+        bank.appendChild(chip);
+      });
+    } else if (ex.type === 'match') {
+      matchesSolved = 0;
+      userMatchSelected = null;
+      container.innerHTML = `
+        <div class="prompt-card">
+          <div class="prompt-type-badge">Match The Pairs</div>
+          <div class="prompt-text">${ex.prompt}</div>
+        </div>
+        <div class="match-pairs-grid" id="match-grid"></div>
+      `;
+      const grid = document.getElementById('match-grid');
+      const cards = [];
+      ex.pairs.forEach((p, idx) => {
+        cards.push({ id: `t-${idx}`, text: p.t, matchId: idx, side: 't' });
+        cards.push({ id: `e-${idx}`, text: p.e, matchId: idx, side: 'e' });
+      });
+      cards.sort(() => Math.random() - 0.5);
+
+      cards.forEach(c => {
+        const el = document.createElement('button');
+        el.className = 'pair-card';
+        el.textContent = c.text;
+        el.id = c.id;
+        el.onclick = () => handlePairClick(c);
+        grid.appendChild(el);
+      });
+    } else if (ex.type === 'listen' || ex.type === 'choice') {
+      selectedChoiceIndex = -1;
+      container.innerHTML = `
+        <div class="prompt-card">
+          <div class="prompt-type-badge">${ex.type === 'listen' ? 'Listening Comprehension' : 'Multiple Choice'}</div>
+          <div class="prompt-text">${ex.prompt}</div>
+          ${ex.audioText ? `
+            <div class="audio-play-row">
+              <button class="speaker-btn" onclick="playAudioText('${ex.audioText}')">🔊 Play Audio</button>
+              <button class="speaker-btn turtle" onclick="playAudioText('${ex.audioText}', 0.6)">🐢 Slow</button>
+            </div>
+          ` : ''}
+        </div>
+        <div class="choices-list" id="choices-container"></div>
+      `;
+      const choicesBox = document.getElementById('choices-container');
+      ex.options.forEach((opt, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'choice-btn';
+        btn.textContent = opt;
+        btn.onclick = () => selectChoice(idx, btn);
+        choicesBox.appendChild(btn);
+      });
+    }
+  }
+
+  function pickJumbleWord(word, idx) {
+    playTapSound();
+    const chip = document.getElementById(`chip-${idx}`);
+    chip.classList.add('used');
+    userJumblePicked.push({ word, idx });
+    renderAssembledBox();
+  }
+  function removeJumbleWord(itemIdx) {
+    playTapSound();
+    const removed = userJumblePicked.splice(itemIdx, 1)[0];
+    document.getElementById(`chip-${removed.idx}`).classList.remove('used');
+    renderAssembledBox();
+  }
+  function renderAssembledBox() {
+    const box = document.getElementById('assembled-box');
+    box.innerHTML = '';
+    if (userJumblePicked.length === 0) {
+      box.innerHTML = '<span style="color:var(--text-dim); font-size:0.85rem;">Tap words below to build sentence</span>';
+      return;
+    }
+    userJumblePicked.forEach((item, idx) => {
+      const chip = document.createElement('button');
+      chip.className = 'word-chip';
+      chip.style.borderColor = 'var(--primary)';
+      chip.textContent = item.word;
+      chip.onclick = () => removeJumbleWord(idx);
+      box.appendChild(chip);
+    });
+  }
+
+  function handlePairClick(card) {
+    const el = document.getElementById(card.id);
+    if (el.classList.contains('matched')) return;
+
+    if (!userMatchSelected) {
+      playTapSound();
+      userMatchSelected = card;
+      el.classList.add('selected');
+      return;
+    }
+
+    if (userMatchSelected.id === card.id) {
+      el.classList.remove('selected');
+      userMatchSelected = null;
+      return;
+    }
+
+    const prevEl = document.getElementById(userMatchSelected.id);
+
+    if (userMatchSelected.matchId === card.matchId && userMatchSelected.side !== card.side) {
+      playSuccessSound();
+      prevEl.className = 'pair-card matched';
+      el.className = 'pair-card matched';
+      userMatchSelected = null;
+      matchesSolved++;
+      if (matchesSolved === activeLessonQueue[activeExerciseIndex].pairs.length) {
+        const sheet = document.getElementById('feedback-sheet');
+        sheet.className = 'feedback-sheet correct';
+        sheet.textContent = '🎉 All pairs matched correctly!';
+        document.getElementById('check-action-btn').textContent = 'Continue →';
+        document.getElementById('check-action-btn').onclick = proceedNextExercise;
+      }
+    } else {
+      playErrorSound();
+      prevEl.classList.add('shake');
+      el.classList.add('shake');
+      setTimeout(() => {
+        prevEl.className = 'pair-card';
+        el.className = 'pair-card';
+        userMatchSelected = null;
+      }, 420);
+    }
+  }
+
+  function selectChoice(idx, btn) {
+    playTapSound();
+    document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedChoiceIndex = idx;
+  }
+
+  function handleExerciseCheck() {
+    const ex = activeLessonQueue[activeExerciseIndex];
+    const sheet = document.getElementById('feedback-sheet');
+    const actionBtn = document.getElementById('check-action-btn');
+
+    let isCorrect = false;
+
+    if (ex.type === 'jumble') {
+      const typed = userJumblePicked.map(p => p.word).join(' ');
+      const target = ex.expected.join(' ');
+      isCorrect = (typed === target);
+    } else if (ex.type === 'choice' || ex.type === 'listen') {
+      isCorrect = (selectedChoiceIndex === ex.correctIndex);
+    } else if (ex.type === 'match') {
+      isCorrect = (matchesSolved === ex.pairs.length);
+    }
+
+    if (isCorrect) {
+      playSuccessSound();
+      sheet.className = 'feedback-sheet correct';
+      sheet.textContent = '🎉 Excellent! That is correct!';
+      actionBtn.textContent = 'Continue →';
+      actionBtn.onclick = proceedNextExercise;
+    } else {
+      playErrorSound();
+      sheet.className = 'feedback-sheet wrong';
+      sheet.textContent = 'Not quite! Review the sentence structure and try again.';
+    }
+  }
+
+  function proceedNextExercise() {
+    activeExerciseIndex++;
+    if (activeExerciseIndex >= activeLessonQueue.length) {
+      playSuccessSound();
+      closeLessonModal();
+
+      appState.freeLessonsCompleted += 1;
+      appState.gems += 20;
+      saveState();
+      updateHeaderAndLockState();
+      renderPathNodes();
+
+      if (!appState.hasLifetimeAccess && appState.freeLessonsCompleted >= 3) {
+        showLifetimeLock();
+      } else {
+        alert('🎉 Lesson completed! +20 Gems earned.');
+      }
+    } else {
+      loadCurrentExercise();
+    }
+  }
+
+  /* Navigation */
+  function switchNav(tabName, shouldPushHistory = true) {
+    playTapSound();
+    document.querySelectorAll('.view-content').forEach(v => v.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+    document.getElementById(`view-${tabName}`).classList.add('active');
+    const btnMap = { learn: 0, tutor: 1, review: 2, profile: 3 };
+    document.querySelectorAll('.nav-btn')[btnMap[tabName]].classList.add('active');
+
+    if (shouldPushHistory && tabName !== 'learn') {
+      pushModalState(tabName);
+    }
+  }
+
+  /* AI Tutor Chat */
+  function updateTutorSuggestions() {
+    const chipsContainer = document.getElementById('suggested-chips');
+    chipsContainer.innerHTML = '';
+    const initialBubble = document.getElementById('initial-tutor-bubble');
+    initialBubble.textContent = currentLang.greet || `Hello! I am your ${currentLang.name} tutor. How are you today? Let's practice!`;
+
+    const genericSuggestions = [
+      'Very well, thank you! How are you?',
+      'Can you help me practice conversation?',
+      'Let\'s practice restaurant vocabulary!'
+    ];
+    genericSuggestions.forEach(txt => {
+      const chip = document.createElement('div');
+      chip.className = 'suggest-chip';
+      chip.textContent = txt;
+      chip.onclick = () => sendTutorReply(txt);
+      chipsContainer.appendChild(chip);
+    });
+  }
+
+  function sendTutorReply(text) {
+    const input = document.getElementById('tutor-input');
+    input.value = text;
+    handleTutorSend();
+  }
+
+  function handleTutorSend() {
+    const input = document.getElementById('tutor-input');
+    const val = (input.value || '').trim();
+    if (!val) return;
+    input.value = '';
+
+    const box = document.getElementById('chat-messages');
+    const userBubble = document.createElement('div');
+    userBubble.className = 'chat-bubble user';
+    userBubble.textContent = val;
+    box.appendChild(userBubble);
+    box.scrollTop = box.scrollHeight;
+
+    setTimeout(() => {
+      playSuccessSound();
+      const tutorBubble = document.createElement('div');
+      tutorBubble.className = 'chat-bubble tutor';
+      tutorBubble.textContent = `🎉 Great job in ${currentLang.name}! Your vocabulary and pronunciation confidence are expanding rapidly. Let's keep building!`;
+      box.appendChild(tutorBubble);
+      box.scrollTop = box.scrollHeight;
+    }, 600);
+  }
+
+  /* Flashcards */
+  const REVIEW_CARDS = [
+    { target: 'La cuenta, por favor', en: 'The check, please', pro: '/lah KWEN-tah por fah-VOR/', cat: 'Food & Dining', ex: '¿Nos trae la cuenta, por favor?' },
+    { target: 'Mucho gusto', en: 'Nice to meet you', pro: '/MOO-choh GOO-stoh/', cat: 'Social Life', ex: 'Hola María, mucho gusto.' },
+    { target: '¿Dónde está la estación?', en: 'Where is the station?', pro: '/DON-deh es-TAH lah es-tah-SYON/', cat: 'Travel & Transit', ex: 'Disculpe, ¿dónde está la estación?' },
+    { target: 'Necesito ayuda', en: 'I need help', pro: '/neh-seh-SEE-toh ah-YOO-dah/', cat: 'Emergencies', ex: '¡Por favor, necesito ayuda médica!' }
+  ];
+  let reviewCardIdx = 0;
+
+  function flipReviewCard() {
+    playTapSound();
+    document.getElementById('review-card-inner').classList.toggle('flipped');
+  }
+  function nextReviewCard() {
+    playTapSound();
+    document.getElementById('review-card-inner').classList.remove('flipped');
+    reviewCardIdx = (reviewCardIdx + 1) % REVIEW_CARDS.length;
+    const item = REVIEW_CARDS[reviewCardIdx];
+    setTimeout(() => {
+      document.getElementById('fc-category').textContent = item.cat;
+      document.getElementById('fc-target').textContent = item.target;
+      document.getElementById('fc-pronunciation').textContent = item.pro;
+      document.getElementById('fc-english').textContent = item.en;
+      document.getElementById('fc-example').textContent = `Example: "${item.ex}"`;
+    }, 200);
+  }
+  function markCardMastered() {
+    playSuccessSound();
+    appState.gems += 5;
+    saveState();
+    updateHeaderAndLockState();
+    nextReviewCard();
+  }
+
+  /* ========================================================================= */
+  /* Universal Language Selector, Search, Filter & Custom Adder               */
+  /* ========================================================================= */
+  function openLangModal() {
+    playTapSound();
+    document.getElementById('lang-search-input').value = '';
+    renderLanguageOptions();
+    document.getElementById('lang-modal').classList.add('active');
+    pushModalState('lang');
+  }
+
+  function closeLangModal(shouldPopHistory = true) {
+    playTapSound();
+    document.getElementById('lang-modal').classList.remove('active');
+    if (shouldPopHistory && window.history.state && window.history.state.modal === 'lang') {
+      try { window.history.back(); } catch(e) {}
+    }
+  }
+
+  function setCategoryFilter(cat, btn) {
+    playTapSound();
+    selectedCategory = cat;
+    document.querySelectorAll('.cat-pill').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderLanguageOptions();
+  }
+
+  function filterLanguages() {
+    renderLanguageOptions();
+  }
+
+  function renderLanguageOptions() {
+    const list = document.getElementById('lang-options-list');
+    list.innerHTML = '';
+    const q = (document.getElementById('lang-search-input').value || '').trim().toLowerCase();
+
+    const filtered = ALL_LANGUAGES.filter(l => {
+      const matchesQuery = !q || l.name.toLowerCase().includes(q) || l.code.toLowerCase().includes(q);
+      const matchesCat = selectedCategory === 'all' || l.cat === selectedCategory;
+      return matchesQuery && matchesCat;
+    });
+
+    if (filtered.length === 0 && q) {
+      list.innerHTML = `
+        <div style="text-align:center; padding:16px; color:var(--text-muted);">
+          <p>No pre-listed language named "${q}".</p>
+          <button class="add-custom-lang-btn" style="margin-top:10px; width:100%;" onclick="addNamedCustomLanguage('${q}')">
+            ✨ Add "${q.charAt(0).toUpperCase() + q.slice(1)}" & Start Learning
+          </button>
+        </div>
+      `;
+      return;
+    }
+
+    filtered.forEach(lang => {
+      const opt = document.createElement('div');
+      opt.className = `lang-option ${lang.code === currentLang.code ? 'selected' : ''}`;
+      opt.innerHTML = `<span>${lang.flag} ${lang.name}</span> <span>${lang.code === currentLang.code ? '✓' : ''}</span>`;
+      opt.onclick = () => selectLanguage(lang);
+      list.appendChild(opt);
+    });
+  }
+
+  function selectLanguage(lang) {
+    playTapSound();
+    currentLang = lang;
+    currentUnits = buildCurriculumForLanguage(lang);
+    appState.selectedLangCode = lang.code;
+    appState.selectedUnitIndex = 0;
+    saveState();
+    closeLangModal();
+    updateHeaderAndLockState();
+    renderUnitCarousel();
+    renderPathNodes();
+    updateTutorSuggestions();
+  }
+
+  function promptAddCustomLanguage() {
+    playTapSound();
+    const name = prompt('Enter the name of ANY language in the world you want to learn:\n(e.g., Cornish, Navajo, Klingon, Tibetan, Ainu, Inuktitut)');
+    if (name && name.trim()) {
+      addNamedCustomLanguage(name.trim());
+    }
+  }
+
+  function addNamedCustomLanguage(name) {
+    playSuccessSound();
+    const code = name.toLowerCase().replace(/[^a-z0-9]/g, '_').slice(0, 10);
+    const customLang = {
+      code: code,
+      name: name.charAt(0).toUpperCase() + name.slice(1),
+      flag: '🌐',
+      cat: 'classical',
+      greet: `Welcome to learning ${name}! Let's build your vocabulary together.`
+    };
+
+    if (!ALL_LANGUAGES.some(l => l.code === code)) {
+      ALL_LANGUAGES.push(customLang);
+      if (!appState.customLanguages) appState.customLanguages = [];
+      appState.customLanguages.push(customLang);
+      saveState();
+    }
+
+    selectLanguage(customLang);
+    alert(`🎉 "${customLang.name}" added to your curriculum! Interactive lessons and AI tutor are now active.`);
+  }
+
+  /* FreeWebToAPK Download Helper */
+  function downloadFreeWebToApkPackage() {
+    playSuccessSound();
+    const htmlContent = document.documentElement.outerHTML;
+    const blob = new Blob([htmlContent], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'index.html';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    alert('✅ Downloaded "index.html"!\n\nUpload this file into FreeWebToAPK (freewebtoapk.com) to generate your standalone Android APK.');
+  }
+</script>
+
+</body>
+</html>

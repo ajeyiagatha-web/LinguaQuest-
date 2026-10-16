@@ -1,0 +1,16 @@
+{
+  "name": "linguaquest",
+  "version": "1.0.0",
+  "description": "LinguaQuest - Interactive Language Learning with FreeWebToAPK and PWA support",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "language-learning",
+    "apk",
+    "pwa"
+  ],
+  "author": "",
+  "license": "MIT"
+}

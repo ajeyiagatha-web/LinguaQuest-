@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">LinguaQuest</string>
+    <!-- Fallback identifiers for analytics and services in development/emulator environments -->
+    <string name="google_app_id" translatable="false">1:000000000000:android:0000000000000000000000</string>
+    <string name="project_id" translatable="false">linguaquest</string>
+    <string name="gcm_defaultSenderId" translatable="false">000000000000</string>
+</resources>
